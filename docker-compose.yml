@@ -1,0 +1,41 @@
+# ------------------------------------------------------------
+# Caja Fuerte de Patrones — backend dockerizado
+#
+# Uso típico:
+#   1. Copiar backend/.env.example a backend/.env y ajustar SERIAL_PORT.
+#   2. docker compose up --build
+#   3. curl http://localhost:8000/health
+#
+# El frontend NO se dockeriza: se arranca aparte con npm run dev.
+# ------------------------------------------------------------
+services:
+  backend:
+    build: ./backend
+    container_name: caja-fuerte-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    # Habilita "host.docker.internal" también en Linux (en Mac/Windows ya existe).
+    # Necesario cuando SERIAL_PORT=socket://host.docker.internal:5555 (modo puente).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    # ----------------------------------------------------------------
+    # LINUX: passthrough del puerto USB del Arduino al contenedor.
+    # Descomentar y ajustar la ruta según `ls /dev/ttyACM* /dev/ttyUSB*`.
+    # En .env poner:   SERIAL_PORT=/dev/ttyACM0
+    # ----------------------------------------------------------------
+    # devices:
+    #   - "/dev/ttyACM0:/dev/ttyACM0"
+    # group_add:
+    #   - "dialout"   # permiso de lectura del puerto serial
+
+    # ----------------------------------------------------------------
+    # MACOS / WINDOWS: Docker NO expone USB al contenedor. Hay que
+    # arrancar un puente TCP en el host con socat y configurar:
+    #   SERIAL_PORT=socket://host.docker.internal:5555
+    # (ver README para el comando exacto de socat.)
+    # ----------------------------------------------------------------
+
+    restart: unless-stopped

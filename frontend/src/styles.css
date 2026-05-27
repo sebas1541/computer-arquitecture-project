@@ -1,0 +1,294 @@
+:root {
+  --bg: #0b1120;
+  --bg-elev: #131c33;
+  --border: #1f2a44;
+  --text: #e5e7eb;
+  --text-muted: #94a3b8;
+  --accent: #22d3ee;
+  --win: #22c55e;
+  --lose: #ef4444;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1100px 600px at 12% -10%, rgba(34, 211, 238, 0.12), transparent),
+    radial-gradient(900px 700px at 110% 110%, rgba(168, 85, 247, 0.12), transparent),
+    var(--bg);
+  color: var(--text);
+}
+
+.app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Header ---------- */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(11, 17, 32, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+.header__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.header__title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.header__subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+}
+
+.status__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.status--ok  .status__dot { background: var(--win); box-shadow: 0 0 12px var(--win); }
+.status--off .status__dot { background: var(--lose); box-shadow: 0 0 12px var(--lose); }
+
+/* ---------- Main layout ---------- */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 36px;
+  padding: 48px 32px;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ---------- State board ---------- */
+.state-board {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.state-board__cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.state-board__arrow {
+  color: var(--border);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.node {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.node__id    { font-size: 22px; font-weight: 800; }
+.node__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+}
+
+.node--active {
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.18), rgba(34, 211, 238, 0.04));
+  box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.12), 0 14px 30px -10px rgba(34, 211, 238, 0.4);
+}
+
+.node--win.node--active {
+  border-color: var(--win);
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.25), rgba(34, 197, 94, 0.04));
+  box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.15), 0 14px 30px -10px rgba(34, 197, 94, 0.5);
+}
+
+.node--lose.node--active {
+  border-color: var(--lose);
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.25), rgba(239, 68, 68, 0.04));
+  box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.15), 0 14px 30px -10px rgba(239, 68, 68, 0.5);
+}
+
+.node__pulse {
+  position: absolute;
+  inset: -8px;
+  border-radius: 28px;
+  border: 2px solid rgba(34, 211, 238, 0.55);
+  pointer-events: none;
+}
+
+/* ---------- HUD cards ---------- */
+.hud {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+@media (max-width: 760px) {
+  .hud { grid-template-columns: 1fr; }
+}
+
+.hud__card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px 22px;
+  min-height: 110px;
+}
+
+.hud__label {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.hud__value      { margin: 0; font-size: 20px; font-weight: 700; }
+.hud__value--xl  { font-size: 40px; }
+.hud__value--muted { color: var(--text-muted); font-weight: 500; }
+
+/* ---------- Pattern ---------- */
+.pattern {
+  display: flex;
+  gap: 10px;
+}
+
+.pattern__slot {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pattern__dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  box-shadow: 0 0 12px currentColor;
+}
+
+.pattern__dot--inline {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+  margin-right: 8px;
+  box-shadow: none;
+}
+
+.pattern__index {
+  position: absolute;
+  bottom: -8px;
+  right: -6px;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg);
+  padding: 1px 5px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+/* ---------- Footer ---------- */
+.footer {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Overlays ---------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+}
+
+.overlay--win {
+  background: radial-gradient(circle at 50% 40%, rgba(34, 197, 94, 0.35), rgba(2, 22, 11, 0.92));
+}
+
+.overlay--lose {
+  background: radial-gradient(circle at 50% 40%, rgba(239, 68, 68, 0.32), rgba(20, 4, 4, 0.95));
+}
+
+.overlay__panel {
+  text-align: center;
+  max-width: 720px;
+}
+
+.overlay__title {
+  margin: 0 0 16px;
+  font-size: clamp(48px, 9vw, 120px);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.overlay__title--win  { color: #d1fae5; }
+.overlay__title--lose { color: #fee2e2; }
+
+.overlay__subtitle {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.82);
+}
