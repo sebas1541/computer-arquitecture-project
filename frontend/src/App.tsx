@@ -5,10 +5,10 @@ import { WinScreen } from "./components/WinScreen";
 import { LoseScreen } from "./components/LoseScreen";
 
 const SYMBOL_COLORS: Record<string, { dot: string; name: string }> = {
-  a: { dot: "#ef4444", name: "Rojo" },
-  b: { dot: "#22c55e", name: "Verde" },
-  c: { dot: "#eab308", name: "Amarillo" },
-  d: { dot: "#3b82f6", name: "Azul" },
+  a: { dot: "#C76B5E", name: "Rojo" },
+  b: { dot: "#6B9D6E", name: "Verde" },
+  c: { dot: "#D4A056", name: "Amarillo" },
+  d: { dot: "#5E83B5", name: "Azul" },
 };
 
 export default function App() {
@@ -17,13 +17,15 @@ export default function App() {
   return (
     <div className="app">
       <header className="header">
-        <div className="header__brand">
-          <span className="header__title">Caja Fuerte de Patrones</span>
-          <span className="header__subtitle">AFD en vivo · Arduino UNO</span>
-        </div>
-        <div className={`status status--${connected ? "ok" : "off"}`}>
-          <span className="status__dot" />
-          {connected ? "Arduino conectado" : "Sin conexión"}
+        <div className="header__inner">
+          <div className="header__brand">
+            <span className="header__title">Caja Fuerte de Patrones</span>
+            <span className="header__subtitle">AFD en vivo · Arduino UNO</span>
+          </div>
+          <div className={`status status--${connected ? "ok" : "off"}`}>
+            <span className="status__dot" />
+            {connected ? "Arduino conectado" : "Sin conexión"}
+          </div>
         </div>
       </header>
 
@@ -46,7 +48,7 @@ export default function App() {
                     <div key={i} className="pattern__slot" title={c?.name ?? sym}>
                       <span
                         className="pattern__dot"
-                        style={{ background: c?.dot ?? "#888" }}
+                        style={{ background: c?.dot ?? "#999" }}
                       />
                       <span className="pattern__index">{i + 1}</span>
                     </div>
@@ -65,7 +67,7 @@ export default function App() {
                 <span>
                   <span
                     className="pattern__dot pattern__dot--inline"
-                    style={{ background: SYMBOL_COLORS[lastInput]?.dot ?? "#888" }}
+                    style={{ background: SYMBOL_COLORS[lastInput]?.dot ?? "#999" }}
                   />
                   {SYMBOL_COLORS[lastInput]?.name ?? lastInput}
                 </span>
@@ -79,8 +81,8 @@ export default function App() {
         <footer className="footer">
           {phase === "idle" && "Presiona cualquier botón A/B/C/D en el Arduino para iniciar."}
           {phase === "playing" && "Reproduce el patrón antes de que se agote el tiempo (2 s por pulsación)."}
-          {phase === "won"  && "¡Premio entregado! Presiona el botón de reinicio."}
-          {phase === "lost" && "Fallo. Presiona el botón de reinicio para volver a jugar."}
+          {phase === "won"  && "¡Salió el pollo! Disfruta la canción."}
+          {phase === "lost" && "Fallo. Reset automático en 5 segundos."}
         </footer>
       </main>
 

@@ -20,7 +20,8 @@
      1. El motor se mueve ANTES de arrancar el temporizador, así
         el usuario aprovecha los 2 s íntegros del TIMEOUT_MS.
      2. Motor a 12 RPM (más ágil, dentro del límite del 28BYJ-48).
-     3. Auto-reset tras 5 s en Q5/Q6 (por si el botón Reset falla).
+     3. Auto-reset: 31 s en Q5 (deja sonar la canción de Ara hasta el final)
+        y 5 s en Q6 (vuelve rápido al juego tras un fallo).
      4. Protocolo de eventos EVT: para integración opcional con
         backend Python / dashboard React.
      5. Al arrancar la aguja queda en Q0 sin girar (no hay test
@@ -58,7 +59,8 @@ const unsigned long TIMEOUT_MS    = 2000;   // tiempo máximo por pulsación
 const unsigned long DEBOUNCE_MS   = 40;
 const unsigned long FLASH_LED_MS  = 500;    // duración del parpadeo al mostrar patrón
 const unsigned long PAUSA_LED_MS  = 200;    // pausa entre LEDs al mostrar patrón
-const unsigned long AUTORESET_MS  = 5000;   // tras Q5 o Q6, vuelve solo a Q0
+const unsigned long AUTORESET_WIN_MS  = 31000;  // Q5: 31s para que termine la canción de Ara
+const unsigned long AUTORESET_LOSE_MS = 5000;   // Q6: 5s al fallo
 const int  VELOCIDAD_MOTOR_RPM    = 12;
 
 /* ---------- TIPOS ---------- */
@@ -135,12 +137,29 @@ void loop() {
    LECTURA DE ENTRADAS (botones + timeout + auto-reset)
    ============================================================ */
 Simbolo leerEntrada() {
-  // 1) Auto-reset en Q5/Q6 después de AUTORESET_MS
-  if ((estadoActual == Q5 || estadoActual == Q6) &&
-      (millis() - tiempoAutoreset > AUTORESET_MS)) {
-    tiempoAutoreset = millis();  // evita re-disparo inmediato
-    Serial.println(F("[i] Auto-reset por timeout en Q5/Q6"));
+  // 1) Auto-reset en Q5/Q6 — ventana distinta para premio vs fallo
+  if (estadoActual == Q5 && (millis() - tiempoAutoreset > AUTORESET_WIN_MS)) {
+    tiempoAutoreset = millis();
+    Serial.println(F("[i] Auto-reset por timeout en Q5 (premio)"));
     return SIM_R;
+  }
+  if (estadoActual == Q6 && (millis() - tiempoAutoreset > AUTORESET_LOSE_MS)) {
+    tiempoAutoreset = millis();
+    Serial.println(F("[i] Auto-reset por timeout en Q6 (fallo)"));
+    return SIM_R;
+  }
+
+  // En Q5, el botón Reset físico se ignora hasta que termine la canción.
+  // (La autoreset se encarga después de AUTORESET_WIN_MS.)
+  if (estadoActual == Q5 && (millis() - tiempoAutoreset <= AUTORESET_WIN_MS)) {
+    // Drenar entradas: leer flancos pero NO retornarlos como símbolos
+    bool curA = digitalRead(PIN_BTN_A);
+    bool curB = digitalRead(PIN_BTN_B);
+    bool curC = digitalRead(PIN_BTN_C);
+    bool curD = digitalRead(PIN_BTN_D);
+    bool curR = digitalRead(PIN_BTN_R);
+    prevA = curA; prevB = curB; prevC = curC; prevD = curD; prevR = curR;
+    return SIM_NONE;
   }
 
   // 2) Timeout durante la fase de juego
@@ -269,7 +288,7 @@ void actualizarSalidas() {
       tiempoAutoreset = millis();
       digitalWrite(PIN_LED_PREMIO, HIGH);
       sonidoPremio();
-      Serial.println(F(">>> Q5 — ¡PREMIO ENTREGADO! Reset (manual o auto en 5s)"));
+      Serial.println(F(">>> Q5 — ¡SALIÓ EL POLLO! (canción 31s antes de reset)"));
       break;
 
     case Q6:
@@ -277,7 +296,7 @@ void actualizarSalidas() {
       tiempoAutoreset = millis();
       digitalWrite(PIN_LED_FALLO, HIGH);
       sonidoFallo();
-      Serial.println(F(">>> Q6 — FALLO. Reset (manual o auto en 5s)"));
+      Serial.println(F(">>> Q6 — FALLO. Reset (manual o auto en 5 s)"));
       break;
   }
 }
