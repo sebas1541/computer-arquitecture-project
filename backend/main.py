@@ -57,7 +57,7 @@ async def health() -> dict:
 
 @app.get("/state")
 async def state() -> dict:
-    return broker.state.snapshot()
+    return {**broker.state.snapshot(), "connected": broker.connected}
 
 
 @app.get("/events")
@@ -66,7 +66,10 @@ async def events(request: Request) -> StreamingResponse:
 
     async def stream():
         # Snapshot inicial para que el cliente recién conectado pinte el estado real.
-        snapshot = broker.state.snapshot()
+        # Incluimos 'connected' porque el evento CONNECTED se emite una sola vez al
+        # abrir el puerto; un cliente que se conecta después no lo recibiría y se
+        # quedaría mostrando "Sin conexión" pese a estar todo funcionando.
+        snapshot = {**broker.state.snapshot(), "connected": broker.connected}
         snapshot_event = {"type": "SNAPSHOT", "value": snapshot}
         yield f"data: {json.dumps(snapshot_event)}\n\n"
 

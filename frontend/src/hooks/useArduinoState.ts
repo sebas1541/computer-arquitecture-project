@@ -12,7 +12,7 @@ export interface ArduinoState {
 }
 
 type Event =
-  | { type: "SNAPSHOT"; value: { state: StateId; pattern: string | null; last_input: string | null; phase: Phase } }
+  | { type: "SNAPSHOT"; value: { state: StateId; pattern: string | null; last_input: string | null; phase: Phase; connected?: boolean } }
   | { type: "STATE"; value: StateId }
   | { type: "PATTERN"; value: string }
   | { type: "INPUT"; value: string }
@@ -93,6 +93,7 @@ function applyEvent(prev: ArduinoState, event: Event): ArduinoState {
         pattern: v.pattern,
         lastInput: v.last_input,
         phase: v.phase,
+        ...(typeof v.connected === "boolean" ? { connected: v.connected } : {}),
       };
     }
     case "STATE":
