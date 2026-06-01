@@ -85,7 +85,7 @@ Si el usuario presiona correctamente los cuatro símbolos en orden, el sistema a
 
 ### 5. Fallo (qN → q6)
 
-Si en algún momento el usuario presiona un botón incorrecto, o si transcurre el tiempo límite (2 segundos por defecto) sin que el usuario presione, el sistema transita al estado q6. Se enciende el LED grande de fallo, suena el tono grave de derrota, el motor gira hasta la posición "FALLO", y el sistema queda bloqueado: ninguna pulsación posterior de los botones de juego tiene efecto. Solo el botón de reinicio reactiva el sistema.
+Si en algún momento el usuario presiona un botón incorrecto, o si transcurre el tiempo límite (8 segundos por defecto) sin que el usuario presione, el sistema transita al estado q6. Se enciende el LED grande de fallo, suena el tono grave de derrota, el motor gira hasta la posición "FALLO", y el sistema queda bloqueado: ninguna pulsación posterior de los botones de juego tiene efecto. Solo el botón de reinicio reactiva el sistema.
 
 ### 6. Reinicio (q5 o q6 → q0)
 
@@ -122,7 +122,7 @@ q6 --[r]--> q0   (reinicio)
 ```
 q0 --[clic botón amarillo]--> q1   (inicia el reto, se muestra "bdac")
 q1 --[b]--> q2   (correcto)
-q2 --[espera 2 segundos sin presionar]--> q6   (timeout, símbolo 't')   ¡FALLO!
+q2 --[espera 8 segundos sin presionar]--> q6   (timeout, símbolo 't')   ¡FALLO!
 q6 --[r]--> q0   (reinicio)
 ```
 

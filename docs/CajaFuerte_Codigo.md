@@ -25,7 +25,7 @@ El sketch emite dos tipos de salida por el puerto serial:
 | `EVT:STATE:Qx` | Al inicio y en cada cambio de estado | Estado actual del AFD |
 | `EVT:PATTERN:xxxx` | Al iniciar una nueva partida (Q0 → Q1) | Secuencia objetivo de 4 caracteres |
 | `EVT:INPUT:x` | En cada flanco de pulsación de botón | Símbolo consumido por el AFD |
-| `EVT:TIMEOUT` | Cuando expira el temporizador de 2 s | Equivale al símbolo `t` |
+| `EVT:TIMEOUT` | Cuando expira el temporizador de 8 s | Equivale al símbolo `t` |
 | `EVT:WIN` | Al entrar a Q5 | Partida ganada |
 | `EVT:LOSE` | Al entrar a Q6 | Partida perdida |
 | `EVT:RESET` | Al volver a Q0 desde Q5 o Q6 | Sistema listo para nueva partida |
@@ -75,7 +75,7 @@ const int  PASOS_POR_VUELTA   = 2048;
 const int  N_ESTADOS          = 7;
 const int  PASOS_POR_ESTADO   = PASOS_POR_VUELTA / N_ESTADOS;  // ≈ 292
 const int  LONGITUD_PATRON    = 4;
-const unsigned long TIMEOUT_MS    = 2000;
+const unsigned long TIMEOUT_MS    = 8000;
 const unsigned long DEBOUNCE_MS   = 40;
 const unsigned long FLASH_LED_MS  = 500;
 const unsigned long PAUSA_LED_MS  = 200;
@@ -167,7 +167,7 @@ void aplicarTransicion(Simbolo sim) {
   }
   if (siguiente != estadoActual) {
     estadoActual = siguiente;
-    // Motor primero, temporizador después: así el usuario tiene los 2 s íntegros.
+    // Motor primero, temporizador después: así el usuario tiene los 8 s íntegros.
     moverMotorAEstado(siguiente);
     actualizarSalidas();
     emitirEventoEstado(siguiente);
@@ -289,7 +289,7 @@ const char* nombreEstado(Estado e) {
 
 **loop().** Lee una entrada y aplica la transición. Toda la complejidad está encapsulada en `leerEntrada()` y `aplicarTransicion()`.
 
-**leerEntrada().** Combina dos fuentes de entrada en un solo `Simbolo`: pulsaciones físicas con detección por flanco, y el timeout de 2 s.
+**leerEntrada().** Combina dos fuentes de entrada en un solo `Simbolo`: pulsaciones físicas con detección por flanco, y el timeout de 8 s.
 
 **aplicarTransicion().** Implementación directa de la función δ. Un `switch(estadoActual)` con la lógica de cada estado. Mueve el motor antes de arrancar el temporizador para no perder tiempo útil. Al final emite los eventos `EVT:` que consume el backend.
 

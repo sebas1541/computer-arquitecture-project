@@ -109,6 +109,25 @@ button { font-family: inherit; }
   box-shadow: 0 0 0 3px rgba(199, 107, 94, 0.18);
 }
 
+.header__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status--sound {
+  cursor: default;
+  border-color: var(--accent, #d4a056);
+  color: var(--accent, #d4a056);
+  background: rgba(212, 160, 86, 0.12);
+  animation: sound-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes sound-pulse {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1; }
+}
+
 /* ---------- Main ---------- */
 .main {
   flex: 1;

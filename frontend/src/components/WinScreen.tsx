@@ -1,22 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
+import { getWinAudio } from "../audio";
 
 const SONG_DURATION_S = 30.27;
 
 export function WinScreen() {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [remaining, setRemaining] = useState<number>(Math.ceil(SONG_DURATION_S));
 
-  // Reproducir audio una sola vez al montar
+  // Reproducir audio una sola vez al montar, usando el elemento ya desbloqueado
+  // por el primer gesto del usuario (ver src/audio.ts). Si el usuario nunca
+  // interactuó con la página, el navegador lo bloqueará y quedará en silencio,
+  // pero el resto del overlay funciona igual.
   useEffect(() => {
-    const audio = new Audio("/salioelpollo.mp3");
+    const audio = getWinAudio();
+    audio.currentTime = 0;
     audio.volume = 0.85;
-    audioRef.current = audio;
-    audio.play().catch(() => {
-      // Algunos navegadores bloquean autoplay sin interacción previa.
-      // Lo dejamos silencioso pero el resto del overlay funciona igual.
-    });
+    audio.play().catch(() => {});
     return () => {
       audio.pause();
       audio.currentTime = 0;

@@ -18,7 +18,7 @@
    ------------------------------------------------------------
    Mejoras respecto a la versión base:
      1. El motor se mueve ANTES de arrancar el temporizador, así
-        el usuario aprovecha los 2 s íntegros del TIMEOUT_MS.
+        el usuario aprovecha los 8 s íntegros del TIMEOUT_MS.
      2. Motor a 12 RPM (más ágil, dentro del límite del 28BYJ-48).
      3. Auto-reset: 31 s en Q5 (deja sonar la canción de Ara hasta el final)
         y 5 s en Q6 (vuelve rápido al juego tras un fallo).
@@ -55,7 +55,7 @@ const int  PASOS_POR_VUELTA   = 2048;                    // 28BYJ-48 (full step)
 const int  N_ESTADOS          = 7;
 const int  PASOS_POR_ESTADO   = PASOS_POR_VUELTA / N_ESTADOS;  // ≈ 292
 const int  LONGITUD_PATRON    = 4;
-const unsigned long TIMEOUT_MS    = 2000;   // tiempo máximo por pulsación
+const unsigned long TIMEOUT_MS    = 8000;   // tiempo máximo por pulsación (antes 2000: demasiado corto)
 const unsigned long DEBOUNCE_MS   = 40;
 const unsigned long FLASH_LED_MS  = 500;    // duración del parpadeo al mostrar patrón
 const unsigned long PAUSA_LED_MS  = 200;    // pausa entre LEDs al mostrar patrón
@@ -203,6 +203,19 @@ Simbolo leerEntrada() {
 void aplicarTransicion(Simbolo sim) {
   Estado siguiente = estadoActual;
 
+  // --- Feedback visual del turno del usuario ---
+  // Al pulsar a/b/c/d durante Q1-Q4 (fase de repetir el patrón) se ilumina
+  // el LED de ese símbolo. Permanece encendido mientras se procesa la
+  // transición (incluido el giro del motor) y se apaga al final.
+  int ledPulsado = -1;
+  bool enTurnoUsuario = (estadoActual == Q1 || estadoActual == Q2 ||
+                         estadoActual == Q3 || estadoActual == Q4);
+  if (enTurnoUsuario &&
+      (sim == SIM_A || sim == SIM_B || sim == SIM_C || sim == SIM_D)) {
+    ledPulsado = pinLEDDeSimbolo(sim);
+    if (ledPulsado != -1) digitalWrite(ledPulsado, HIGH);
+  }
+
   switch (estadoActual) {
     case Q0:
       // La pulsación de disparo solo arranca el reto: NO se consume
@@ -256,9 +269,26 @@ void aplicarTransicion(Simbolo sim) {
 
     estadoActual = siguiente;
     moverMotorAEstado(siguiente);   // primero mueve el motor (bloqueante ~0.7s)
-    actualizarSalidas();            // después arranca el temporizador
+
+    // --- FIX: limpiar la entrada acumulada durante el giro bloqueante ---
+    // Durante motor.step() el loop NO corre, así que cualquier pulsación
+    // hecha mientras gira la aguja se pierde y puede dejar prev[] desfasado.
+    // Re-leemos el estado real de los botones (mismo criterio que mostrarPatron)
+    // para que la PRIMERA pulsación del nuevo turno se detecte como flanco limpio.
+    prevA = digitalRead(PIN_BTN_A);
+    prevB = digitalRead(PIN_BTN_B);
+    prevC = digitalRead(PIN_BTN_C);
+    prevD = digitalRead(PIN_BTN_D);
+    prevR = digitalRead(PIN_BTN_R);
+    ultimaPulsacionMs = millis();
+    // -------------------------------------------------------------------
+
+    actualizarSalidas();            // después arranca el temporizador (ventana limpia)
     emitirEventoEstado(siguiente);
   }
+
+  // Apagar el LED de feedback de la pulsación una vez procesada la transición.
+  if (ledPulsado != -1) digitalWrite(ledPulsado, LOW);
 }
 
 /* ============================================================

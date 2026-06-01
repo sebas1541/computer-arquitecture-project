@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { useArduinoState } from "./hooks/useArduinoState";
 import { StateBoard } from "./components/StateBoard";
 import { WinScreen } from "./components/WinScreen";
 import { LoseScreen } from "./components/LoseScreen";
+import { setupAudioUnlock, onAudioUnlockChange, isAudioUnlocked } from "./audio";
 
 const SYMBOL_COLORS: Record<string, { dot: string; name: string }> = {
   a: { dot: "#C76B5E", name: "Rojo" },
@@ -13,6 +15,19 @@ const SYMBOL_COLORS: Record<string, { dot: string; name: string }> = {
 
 export default function App() {
   const { state, pattern, lastInput, phase, connected } = useArduinoState();
+  const [soundReady, setSoundReady] = useState<boolean>(isAudioUnlocked());
+
+  // El juego se controla con botones físicos, así que el navegador bloquea el
+  // audio hasta que haya un gesto sobre la página. Desbloqueamos en el primer
+  // clic/tecla/toque y ocultamos el aviso cuando ya está listo.
+  useEffect(() => {
+    const stopUnlock = setupAudioUnlock();
+    const stopListen = onAudioUnlockChange(setSoundReady);
+    return () => {
+      stopUnlock();
+      stopListen();
+    };
+  }, []);
 
   return (
     <div className="app">
@@ -22,9 +37,16 @@ export default function App() {
             <span className="header__title">Caja Fuerte de Patrones</span>
             <span className="header__subtitle">AFD en vivo · Arduino UNO</span>
           </div>
-          <div className={`status status--${connected ? "ok" : "off"}`}>
-            <span className="status__dot" />
-            {connected ? "Arduino conectado" : "Sin conexión"}
+          <div className="header__status">
+            {!soundReady && (
+              <span className="status status--sound" title="El navegador bloquea el sonido hasta que interactúes con la página">
+                🔊 Haz clic para activar el sonido
+              </span>
+            )}
+            <div className={`status status--${connected ? "ok" : "off"}`}>
+              <span className="status__dot" />
+              {connected ? "Arduino conectado" : "Sin conexión"}
+            </div>
           </div>
         </div>
       </header>
@@ -80,7 +102,7 @@ export default function App() {
 
         <footer className="footer">
           {phase === "idle" && "Presiona cualquier botón A/B/C/D en el Arduino para iniciar."}
-          {phase === "playing" && "Reproduce el patrón antes de que se agote el tiempo (2 s por pulsación)."}
+          {phase === "playing" && "Reproduce el patrón antes de que se agote el tiempo (8 s por pulsación)."}
           {phase === "won"  && "¡Salió el pollo! Disfruta la canción."}
           {phase === "lost" && "Fallo. Reset automático en 5 segundos."}
         </footer>
