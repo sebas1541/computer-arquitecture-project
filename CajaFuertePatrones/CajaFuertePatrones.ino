@@ -382,7 +382,7 @@ void mostrarPatron() {
 void moverMotorAEstado(Estado destino) {
   int diferencia = (int)destino - posicionMotor;
   if (diferencia != 0) {
-    motor.step(diferencia * PASOS_POR_ESTADO);
+    motor.step(-diferencia * PASOS_POR_ESTADO);
   }
   posicionMotor = (int)destino;
 }
